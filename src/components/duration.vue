@@ -1,104 +1,90 @@
 <template>
   <div>
     <h2>测试版本1</h2>
-    <p>发表时间：{{ dur1.toString() }}</p>
-    <p>发表于：{{ dur1 | calFilter }}</p>
-    <p>发表时间：{{ dur2.toString() }}</p>
-    <p>发表于：{{ dur2 | calFilter }}</p>
-    <p>发表时间：{{ dur3.toString() }}</p>
-    <p>发表于：{{ dur3 | calFilter }}</p>
+    <p>发表时间：{{ dur1 }}</p>
+    <p>发表于：{{ dur1 | relative_date1 }}</p>
+    <p>发表时间：{{ dur2 }}</p>
+    <p>发表于：{{ dur2 | relative_date1 }}</p>
+    <p>发表时间：{{ dur3 }}</p>
+    <p>发表于：{{ dur3 | relative_date1 }}</p>
 
     <h2>测试版本2</h2>
-    <p>发表时间：{{ dur1.toString() }}</p>
-    <p>发表于：{{ dur1 | calFilter2 }}</p>
-    <p>发表时间：{{ dur2.toString() }}</p>
-    <p>发表于：{{ dur2 | calFilter2 }}</p>
-    <p>发表时间：{{ dur3.toString() }}</p>
-    <p>发表于：{{ dur3 | calFilter2 }}</p>
+    <p>发表时间：{{ dur1 }}</p>
+    <p>发表于：{{ dur1 | relative_date2 }}</p>
+    <p>发表时间：{{ dur2 }}</p>
+    <p>发表于：{{ dur2 | relative_date2 }}</p>
+    <p>发表时间：{{ dur3 }}</p>
+    <p>发表于：{{ dur3 | relative_date2 }}</p>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: 'Duration',
   data () {
     return {
-      dur1: new Date(2018, 8, 20, 10, 24, 0),
-      dur2: new Date(2018, 8, 10, 10, 24, 0),
-      dur3: new Date(2018, 3, 5, 10, 24, 0)
+      dur1: new Date(2018, 9, 10, 10, 24, 0),
+      dur2: new Date(2018, 8, 21, 12, 24, 0),
+      dur3: new Date(2018, 8, 21, 12, 34, 0)
     }
   },
   filters: {
-    calFilter: function (preDate) {
-      if (!preDate) {
-        return '0 秒前'
-      }
-      let dur = Math.floor(((new Date()).getTime() - preDate.getTime()) / 1000)
+    relative_date1 (date) {
+      if (!date) return ''
 
-      if (dur < 0) { // 时间超前
-        return '0 秒前'
-      } else if (dur < 31536000) { // 发表时间不超过1年,可调
-        let day = Math.floor(dur / 86400) // 天显示
-        if (day > 0) {
-          return `${day} 天前`
-        }
+      const duration = ~~(((new Date()).getTime() - date.getTime()) / 1000)
+      if (duration < 0) return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
 
-        let hour = Math.floor((dur % 86400) / 3600)
-        if (hour > 0) { // 小时显示
-          return `${hour} 小时前`
-        }
-
-        let minute = Math.floor((dur % 86400 % 3600) / 60)
-        if (minute > 0) { // 分钟显示
-          return `${minute} 分钟前`
-        }
-
-        let second = Math.floor(dur % 86400 % 3600 % 60) // 秒显示
+      if (duration < 31536000) { // 发表时间不超过1年,可调
+        // 天显示
+        const day = ~~(duration / 86400)
+        if (day > 0) return `${day} 天前`
+        // 小时显示
+        const hour = ~~((duration % 86400) / 3600)
+        if (hour > 0) return `${hour} 小时前`
+        // 分钟显示
+        const minute = ~~((duration % 86400 % 3600) / 60)
+        if (minute > 0) return `${minute} 分钟前`
+        // 秒显示
+        const second = ~~(duration % 86400 % 3600 % 60)
         return `${second} 秒前`
-      } else { // 时间超过一年，打印日期
-        return `${preDate.getFullYear()}-${preDate.getMonth() + 1}-${preDate.getDate()}`
       }
+      // 时间超过一年，打印日期
+      return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
     },
 
-    calFilter2: function (preDate) {
-      if (!preDate) {
-        return '0 秒前'
-      }
-      let nowDate = new Date()
-      let dur = Math.floor((nowDate.getTime() - preDate.getTime()) / 1000)
+    relative_date2 (date) {
+      if (!date) return ''
 
-      if (dur < 0) { // 时间超前
-        return '0 秒前'
-      } else if (dur < 31536000) { // 发表时间不超过1年,可调
-        let day = Math.floor(dur / 86400)
-        if (day > 0) { // 天表示
-          if (day >= 31) { // 天数大于31，用月表示
-            if (nowDate.getFullYear() - preDate.getFullYear() > 0) {
-              return `${nowDate.getMonth() + 12 - preDate.getMonth()} 个月前`
-            } else {
-              return `${nowDate.getMonth() - preDate.getMonth()} 个月前`
-            }
+      const now = new Date()
+      const duration = ~~((now.getTime() - date.getTime()) / 1000)
+      if (duration < 0) return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+
+      if (duration < 31536000) { // 发表时间不超过1年,可调
+        const day = ~~(duration / 86400)
+        if (day > 0) {
+          // 天数大于31，用月表示
+          if (day >= 31) {
+            if (now.getFullYear() - date.getFullYear() > 0) return `${now.getMonth() + 12 - date.getMonth()} 个月前`
+            else return `${now.getMonth() - date.getMonth()} 个月前`
           }
-          if (day >= 7) { // 大于7小于31
-            return `${Math.floor(day / 7)} 周前`
-          } else return `${day} 天前`
+          // 大于7小于31
+          if (day >= 7) return `${~~(day / 7)} 周前`
+          // 7天以内
+          return `${day} 天前`
         }
-
-        let hour = Math.floor((dur % 86400) / 3600)
-        if (hour > 0) { // 小时表示
-          return `${hour} 小时前`
-        }
-
-        let minute = Math.floor((dur % 86400 % 3600) / 60)
-        if (minute > 0) { // 分钟表示
-          return `${minute} 分钟前`
-        }
-
-        let second = Math.floor(dur % 86400 % 3600 % 60) // 秒表示
+        // 小时显示
+        const hour = ~~((duration % 86400) / 3600)
+        if (hour > 0) return `${hour} 小时前`
+        // 分钟显示
+        const minute = ~~((duration % 86400 % 3600) / 60)
+        if (minute > 0) return `${minute} 分钟前`
+        // 秒显示
+        const second = ~~(duration % 86400 % 3600 % 60)
         return `${second} 秒前`
-      } else { // 时间超过一年，打印日期
-        return `${preDate.getFullYear()}-${preDate.getMonth() + 1}-${preDate.getDate()}`
       }
+      // 时间超过一年，打印日期
+      return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
     }
   }
 }
